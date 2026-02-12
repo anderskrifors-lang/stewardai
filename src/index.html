@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StewardAI - Antibiotikabeslutsstöd</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0071BC;
+            --primary-dark: #003057;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .logo-icon { font-size: 1.75rem; }
+        .logo h1 { font-size: 1.5rem; font-weight: 700; }
+        .logo span { font-size: 0.875rem; opacity: 0.9; }
+        
+        .strama-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .checkbox-item input { width: auto; }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover { background: var(--primary-dark); }
+        
+        /* Results */
+        .result-card {
+            border: 2px solid var(--success);
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+        }
+        
+        .recommendation {
+            background: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .drug-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        
+        .coverage-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .coverage-high { background: #D1FAE5; color: #065F46; }
+        .coverage-medium { background: #FEF3C7; color: #92400E; }
+        .coverage-low { background: #FEE2E2; color: #991B1B; }
+        
+        .dosage {
+            font-size: 1.125rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .rationale {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .strama-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .score-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .score-green { background: var(--success); }
+        .score-yellow { background: var(--warning); }
+        .score-red { background: var(--danger); }
+        
+        .alternatives {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .alternatives h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .alt-drug {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .warnings {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #FEF3C7;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .warnings h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #92400E;
+            margin-bottom: 0.5rem;
+        }
+        
+        .warnings ul {
+            font-size: 0.875rem;
+            color: #78350F;
+            padding-left: 1.25rem;
+        }
+        
+        .hidden { display: none; }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">🦠</span>
+            <div>
+                <h1>StewardAI</h1>
+                <span>Antibiotikabeslutsstöd</span>
+            </div>
+        </div>
+        <div class="strama-badge">⚕️ Strama-kompatibel</div>
+    </header>
+    
+    <main>
+        <div class="card">
+            <div class="card-header">
+                <span>📋</span>
+                <h2>Patientinformation</h2>
+            </div>
+            
+            <form id="patientForm">
+                <div class="form-group">
+                    <label for="infection">Infektionstyp</label>
+                    <select id="infection" required>
+                        <option value="">Välj infektion...</option>
+                        <optgroup label="Luftvägar">
+                            <option value="pneumonia_cap">Pneumoni (samhällsförvärvad)</option>
+                            <option value="pneumonia_hap">Pneumoni (sjukhusförvärvad)</option>
+                            <option value="urti">Övre luftvägsinfektion</option>
+                            <option value="acute_bronchitis">Akut bronkit</option>
+                        </optgroup>
+                        <optgroup label="Urinvägar">
+                            <option value="uti_uncomplicated">UVI (okomplicerad)</option>
+                            <option value="uti_complicated">UVI (komplicerad)</option>
+                            <option value="pyelonephritis">Pyelonefrit</option>
+                        </optgroup>
+                        <optgroup label="Hud & mjukdelar">
+                            <option value="cellulitis">Cellulit/Erysipelas</option>
+                            <option value="wound_infection">Sårinfektion</option>
+                            <option value="abscess">Abscess</option>
+                        </optgroup>
+                        <optgroup label="Bukinfektioner">
+                            <option value="cholecystitis">Kolecystit</option>
+                            <option value="diverticulitis">Divertikulit</option>
+                            <option value="appendicitis">Appendicit</option>
+                        </optgroup>
+                        <optgroup label="Sepsis">
+                            <option value="sepsis_unknown">Sepsis (okänt fokus)</option>
+                            <option value="sepsis_uro">Urosepsis</option>
+                            <option value="sepsis_abdominal">Abdominal sepsis</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="severity">Svårighetsgrad</label>
+                    <select id="severity" required>
+                        <option value="mild">Mild</option>
+                        <option value="moderate" selected>Måttlig</option>
+                        <option value="severe">Allvarlig</option>
+                        <option value="septic_shock">Septisk chock</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gfr">eGFR (mL/min/1.73m²)</label>
+                    <input type="number" id="gfr" value="90" min="5" max="150">
+                </div>
+                
+                <div class="form-group">
+                    <label>Allergier</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="allergy_pc" value="penicillin">
+                            Penicillin
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="allergy_cef" value="cefalosporin">
+                            Cefalosporin
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="allergy_sulfa" value="sulfa">
+                            Sulfa
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="allergy_fq" value="fluorokinolon">
+                            Fluorokinolon
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Riskfaktorer</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="risk_mrsa" value="mrsa">
+                            MRSA-risk
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="risk_esbl" value="esbl">
+                            ESBL-risk
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="risk_pseudomonas" value="pseudomonas">
+                            Pseudomonas-risk
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="risk_immunocompromised" value="immunocompromised">
+                            Immunsupprimerad
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="culture">Odlingssvar</label>
+                    <select id="culture">
+                        <option value="pending">Väntar på svar</option>
+                        <option value="negative">Negativ</option>
+                        <option value="e_coli">E. coli</option>
+                        <option value="e_coli_esbl">E. coli (ESBL)</option>
+                        <option value="klebsiella">Klebsiella pneumoniae</option>
+                        <option value="s_aureus">S. aureus (MSSA)</option>
+                        <option value="mrsa">S. aureus (MRSA)</option>
+                        <option value="s_pneumoniae">S. pneumoniae</option>
+                        <option value="pseudomonas">P. aeruginosa</option>
+                        <option value="enterococcus">Enterococcus spp.</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">🔍 Få rekommendation</button>
+            </form>
+        </div>
+        
+        <div id="resultsContainer">
+            <div class="card" id="emptyState">
+                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🦠</div>
+                    <h3 style="margin-bottom: 0.5rem;">Fyll i patientinformation</h3>
+                    <p>StewardAI ger dig evidensbaserade antibiotikaförslag</p>
+                </div>
+            </div>
+            
+            <div class="card hidden" id="loadingState">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyserar resistensmönster...</p>
+                </div>
+            </div>
+            
+            <div class="card result-card hidden" id="resultState">
+                <div class="card-header">
+                    <span>💊</span>
+                    <h2>Rekommendation</h2>
+                </div>
+                
+                <div id="recommendationContent">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>StewardAI MVP v0.1 | Region Västmanland | <a href="https://strama.se">Strama-riktlinjer</a></p>
+        <p style="margin-top: 0.5rem; font-size: 0.75rem;">⚠️ Beslutsstöd - ersätter inte klinisk bedömning</p>
+    </footer>
+    
+    <script src="app.js"></script>
+</body>
+</html>
